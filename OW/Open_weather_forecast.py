@@ -1,14 +1,13 @@
-import json
-import pandas as pd
-import requests
 import sys
+import requests
 import csv
 import collections
 from datetime import datetime
+
+
 def get_weather(location):
     api_key = '82263ce8ab1dc5df22e5914cecb17102'
-    #url = "https://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid={}".format(location, api_key)
-    url = "https://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&appid={}".format('warsaw', api_key)
+    url = "https://api.openweathermap.org/data/2.5/forecast?q={}&units=metric&appid={}".format(location, api_key)
     r = requests.get(url)
     test_data=r.json()
     # print(type(test_data))
@@ -48,7 +47,7 @@ def get_weather(location):
     a2.pop('sys_pod', None)
     a2.pop('clouds_all', None)
     a2.pop('dt_txt', None)
-    with open('mycsvfile.csv', 'w',newline='') as f:  # Just use 'w' mode in 3.x
+    with open('forecast.csv', 'w',newline='') as f:  # Just use 'w' mode in 3.x
         w = csv.DictWriter(f, a2.keys())
         w.writeheader()
         for r in test_data['list']:
@@ -66,7 +65,7 @@ def get_weather(location):
             rr.pop('clouds_all', None)
             at={'update_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             at.update(a)
-            at['city_name']='Warszawa'
+            at['city_name']=location
             rr['dt']=datetime.fromtimestamp((rr['dt'])).strftime('%Y-%m-%d %H:%M:%S')
             at.update(rr)
 
@@ -74,9 +73,11 @@ def get_weather(location):
             w.writerow(at)
         f.close()
 
+
 def main():
-    location = "Warsaw"
+    location = sys.argv[1]
     weather = get_weather(location)
+
 
 if __name__ == '__main__':
     main()
