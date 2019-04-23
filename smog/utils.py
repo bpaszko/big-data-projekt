@@ -5,6 +5,7 @@ import os
 import re
 import logging
 
+
 def get_current_pollution(stations_csv, save_path, max_history=6):
     stations_df = pd.read_csv(stations_csv)
     stations_df = stations_df[stations_df['DOSTEPNOSC'] == True]
@@ -117,19 +118,17 @@ def load_data(data_dir, stations_csv, measures):
         remove_excels(new_dir_path)
 
 
-
 if __name__ == '__main__':
-    current_path = os.path.dirname(os.path.realpath(__file__))
-    stations_csv = os.path.join(current_path, '../data/smog/all_stations.csv')
-    save_path = os.path.join(current_path, '../data/smog/current')
-    history_dir = os.path.join(current_path, '../data/smog/history')
+    stations_csv = os.path.join('..', 'data', 'smog', 'all_stations.csv')
+    save_path = os.path.join('..', 'data', 'smog', 'current.csv')
+    history_dir = os.path.join('..', 'data', 'smog', 'history')
     measures = {
         'PM10': ['PM10'],
         'PM25': ['PM25', 'PM2.5', 'PM2,5'],
     }
 
     ### LOAD HISTORICAL DATA
-    load_data(history_dir, stations_csv, measures)
+    #load_data(history_dir, stations_csv, measures)
 
     ### LOAD CURRENT DATA
-    # get_current_pollution(stations_csv, save_path, max_history=6):
+    get_current_pollution(stations_csv, save_path, max_history=6)
