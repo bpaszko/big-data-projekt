@@ -32,7 +32,7 @@ def get_weather(location):
     #a2={a['name'],a['dt'],a['main_temp_min'],a['main_temp_max'],a['main_pressure'],a['main_humidity'],a['wind_speed']}
     a2= {'city_name':a.get('name'),'dt':a.get('dt'),'main_temp_min':a.get('main_temp_min'),'main_temp_max':a.get('main_temp_max'),'main_pressure':a.get('main_pressure'),'main_humidity':a.get('main_humidity'),'wind_speed':a.get('wind_speed')}
     a2
-    with open('mycsvfile.csv', 'w', newline='') as f:  # Just use 'w' mode in 3.x
+    with open('odczyt.csv', 'w', newline='') as f:  # Just use 'w' mode in 3.x
         w = csv.DictWriter(f, a2.keys())
         w.writeheader()
 
