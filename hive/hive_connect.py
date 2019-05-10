@@ -2,19 +2,17 @@ from pyhive import hive
 
 hostname = "localhost"
 port = "10000"
-user = "hive"
-password = "hive-password"
 database = "default"
 
-def hiveconnection(host, port, user, password, database):
-    conn = hive.Connection(host=host, port=port, username=user, password=password,
-                           database=database, auth="None")
+
+def hiveconnection(host, port, database):
+    conn = hive.Connection(host=host, port=port, auth="NOSASL")
     cur = conn.cursor()
-    cur.execute("SELECT * FROM test")
+    cur.execute("SHOW DATABASES")
     result = cur.fetchall()
 
     return result
 
 
-output = hiveconnection(hostname, port, user, password, database)
+output = hiveconnection(hostname, port, database)
 print(output)
