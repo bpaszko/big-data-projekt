@@ -1,5 +1,5 @@
 CREATE EXTERNAL TABLE IF NOT EXISTS meteo_final_text(
-    dt timestamp ,
+    dt date ,
     station string,
     main_temp_max double,
     main_temp_min double,
@@ -13,7 +13,7 @@ LOCATION '/data/weather/meteo_final'
 TBLPROPERTIES ('skip.header.line.count'='1');
 
 CREATE TABLE IF NOT EXISTS meteo_final(
-    dt timestamp ,
+    dt date ,
     station string,
     main_temp_max double,
     main_temp_min double,
