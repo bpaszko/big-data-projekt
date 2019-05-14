@@ -1,6 +1,5 @@
 SELECT
   weather.dt,
-  weather.time,
   weather.city,
   pollution.current_value,
   weather.temp_max,
@@ -11,51 +10,62 @@ SELECT
 FROM
   (
     SELECT
-      dt,
-      time,
-      station as city,
+      a.dt,
+      LOWER(a.station) as city,
       AVG(main_temp_max) as temp_max,
       AVG(main_temp_min) as temp_min,
       AVG(main_pressure) as pressure,
       AVG(main_humidity) as humidity,
       AVG(wind_speed) as wind_speed
     FROM
-      meteo_predykcje
+      weather_forecast_text AS a
+      JOIN (
+        SELECT
+          station AS city,
+          MAX(update_date) AS recent_time
+        FROM
+          weather_forecast_text
+        GROUP BY
+          station
+      ) AS b ON a.station = b.city
     WHERE
-      from_unixtime(
-        UNIX_TIMESTAMP(dt, "yyyy-MM-dd HH:mm:ss"),
-        "yyyy-MM-dd"
-      ) == add_date({ }, 1)
+      a.station = b.city
+      AND a.dt > "{}"
     GROUP BY
-      station
+      a.dt,
+      a.station
   ) as weather
   JOIN (
     SELECT
-      city,
-      AVG(wartosc) as wartosc
+      LOWER(pm.city) as city,
+      AVG(wartosc) as current_value
     FROM
-      PM10_history AS pm
+      (
+        SELECT
+          x.dt,
+          x.wartosc,
+          y.miejscowosc as city
+        FROM
+          smog_history AS x
+          JOIN all_stations AS y ON x.id = y.id
+        WHERE
+          x.pomiar = "{}"
+      ) AS pm
       JOIN (
         SELECT
           b.miejscowosc AS city,
-          MAX(a.time) AS recent_time
+          MAX(a.dt) AS recent_time
         FROM
-          PM10_history AS a
+          smog_history AS a
           JOIN all_stations AS b ON a.id = b.id
         WHERE
-          TO_DATE(
-            from_unixtime(
-              UNIX_TIMESTAMP(dt, "yyyy-MM-dd HH:mm:ss"),
-              "yyyy-MM-dd"
-            )
-          ) = { }
+          pomiar = "{}"
         GROUP BY
           b.miejscowosc
       ) AS last_times ON pm.city = last_times.city
     WHERE
-      pm.dt = { }
-      AND pm.time = last_time.recent_time
+      pm.dt = last_times.recent_time
     GROUP BY
-      city
-  ) as polluttion ON weather.city = pollution.city
+      pm.city
+  ) as pollution ON weather.city = pollution.city
 

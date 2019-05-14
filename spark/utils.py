@@ -3,8 +3,10 @@ from pyspark.sql import SQLContext, SparkSession
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import VectorAssembler, Imputer, ImputerModel
+import pyspark.sql.functions as sf
 
 import os
+import datetime
 
 
 class PollutionModel:
@@ -40,9 +42,6 @@ class PollutionModel:
     def fit_sql(self, sql_path='./sqls/train.sql', validate=False, **kwargs):
         query = read_sql(sql_path, *[self.pm]*2)
         df = self.session.sql(query)
-        # df = df.selectExpr('current_date', '"PM10"')
-        # df.show(10)
-        # return
         self.fit_data(df)
         df = self.transform_data(df)
         train_df = df.select(['features', self.label])
@@ -54,18 +53,21 @@ class PollutionModel:
         self.model_summary(test_df)
 
     def predict_sql(self, sql_path='./sqls/inference.sql'):
-        query = read_sql(sql_path)
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+        query = read_sql(sql_path, *[current_time, self.pm, self.pm])
         df = self.session.sql(query)
         df = self.transform_data(df)
-        df = df.select(['dt', 'time', 'features'])
+        df = df.select(['dt', 'city', 'features'])
         predictions = self.model.transform(df)
-        predictions.show(10)
         self.store(predictions)
     
     def store(self, df):
-        df = df.selectExpr('dt', 'time', '"PM10"', 'prediction as value')
-        df.registerTempTable("temptable") 
-        sqlContext.sql("insert into table mytable select * from temptable")
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+        df = df.withColumn('update_date', sf.lit(current_time)).withColumn('pomiar', sf.lit(self.pm))
+        df = df.selectExpr('dt', 'city as miejscowosc', 'pomiar', 'prediction as value', 'update_date')
+        df.show(50)
+        # df.registerTempTable("temptable") 
+        # sqlContext.sql("insert into table mytable select * from temptable")
 
     def model_summary(self, test_df=None):
         assert self.model is not None
@@ -119,8 +121,10 @@ if __name__ == '__main__':
     train_kwargs = {'maxIter':100, 'regParam':0.3, 'elasticNetParam':0.8}
     
     pm10_model = PollutionModel(sparkSession, 'PM10', features=features)
-
-    # pm10_model.load('./models/pm10')
-    pm10_model.fit_sql('./sqls/train.sql', validate=True, **train_kwargs)
-    pm10_model.save('./models/pm10')
+    pm10_model.load('./models/pm10')
+    pm10_model.predict_sql('./sqls/inference.sql')
+    
+    
+    # pm10_model.fit_sql('./sqls/train.sql', validate=True, **train_kwargs)
+    # pm10_model.save('./models/pm10')
     
