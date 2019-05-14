@@ -40,9 +40,9 @@ class PollutionModel:
     def fit_sql(self, sql_path='./sqls/train.sql', validate=False, **kwargs):
         query = read_sql(sql_path, *[self.pm]*2)
         df = self.session.sql(query)
-        df = df.selectExpr('current_date', '"PM10"')
-        df.show(10)
-        return
+        # df = df.selectExpr('current_date', '"PM10"')
+        # df.show(10)
+        # return
         self.fit_data(df)
         df = self.transform_data(df)
         train_df = df.select(['features', self.label])
