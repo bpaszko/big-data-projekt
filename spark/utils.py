@@ -38,7 +38,7 @@ class PollutionModel:
             raise RuntimeError('Save path: {}, does not exist or is not a directory'.format(save_dir)) 
 
     def fit_sql(self, sql_path='./sqls/train.sql', validate=False, **kwargs):
-        query = read_sql(sql_path, *['{}_history'.format(self.pm)]*2)
+        query = read_sql(sql_path, *[self.pm]*2)
         df = self.session.sql(query)
         df = df.selectExpr('current_date', '"PM10"')
         df.show(10)
@@ -121,6 +121,6 @@ if __name__ == '__main__':
     pm10_model = PollutionModel(sparkSession, 'PM10', features=features)
 
     # pm10_model.load('./models/pm10')
-    pm10_model.fit_sql('./sqls/train.sql', validate=False, **train_kwargs)
-    #  pm10_model.save('./models/pm10')
+    pm10_model.fit_sql('./sqls/train.sql', validate=True, **train_kwargs)
+    pm10_model.save('./models/pm10')
     

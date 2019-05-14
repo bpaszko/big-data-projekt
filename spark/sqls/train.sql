@@ -50,9 +50,10 @@ FROM
               id,
               wartosc
             FROM
-              {} /* PM10 or PM25 */
+	      smog_history
             WHERE
               wartosc IS NOT NULL
+	      AND pomiar = {}  /* PM10 lub PM25 */
           ) as a
           JOIN all_stations as s ON a.id = s.id
         GROUP BY
@@ -76,9 +77,10 @@ FROM
               id,
               wartosc
             FROM 
-              {} /* PM10 or PM25 */
+              smog_history 
             WHERE
               wartosc IS NOT NULL
+	      AND pomiar = {}  /* PM10 lub PM25 */
           ) as a
           JOIN all_stations as s ON a.id = s.id
         GROUP BY
