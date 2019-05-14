@@ -6,8 +6,8 @@ weather_forecast_filename = "weather_forecast.csv"
 
 files_path = os.path.join("..", "data", "weather")
 
-weather_current_filename = os.path.join(files_path, weather_current_filename)
-weather_forecast_filename = os.path.join(files_path, weather_forecast_filename)
+weather_current_filename = os.path.join(files_path, "weather_current", weather_current_filename)
+weather_forecast_filename = os.path.join(files_path, "weather_forecast", weather_forecast_filename)
 
 encoding_utf = "utf-8"
 
@@ -60,8 +60,7 @@ weather_current_columns = [
 
 weather_forecast_columns = [
     'update_date',
-    *weather_current_columns,
-    'rain_3h'
+    *weather_current_columns
 ]
 
 

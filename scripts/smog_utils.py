@@ -119,10 +119,10 @@ def load_data(data_dir, stations_csv, measures):
 
 
 if __name__ == '__main__':
-    current_path = os.path.dirname(os.path.realpath(__file__))
-    stations_csv = os.path.join(current_path, '../data/smog/all_stations.csv')
-    save_path = os.path.join(current_path, '../data/smog/current/tmp.csv')
-    history_dir = os.path.join(current_path, '../data/smog/history')
+    smog_dir_path = os.path.join('..', 'data', 'smog')
+    stations_csv = os.path.join(smog_dir_path, 'all_stations', 'all_stations.csv')
+    save_path = os.path.join(smog_dir_path, 'smog_current', "smog_current.csv")
+    history_dir = os.path.join(smog_dir_path, 'history')
     measures = {
         'PM10': ['PM10'],
         'PM25': ['PM25', 'PM2.5', 'PM2,5'],
