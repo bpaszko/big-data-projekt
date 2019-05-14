@@ -10,7 +10,7 @@ import datetime
 
 
 class PollutionModel:
-    available_measurements = ['PM10', 'PM25']
+    available_measurements = ['PM10', 'PM2.5']
 
     def __init__(self, spark_session, pm, features, label='future_value'):
         assert pm in self.available_measurements
@@ -63,11 +63,12 @@ class PollutionModel:
     
     def store(self, df):
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
-        df = df.withColumn('update_date', sf.lit(current_time)).withColumn('pomiar', sf.lit(self.pm))
-        df = df.selectExpr('dt', 'city as miejscowosc', 'pomiar', 'prediction as value', 'update_date')
-        df.show(50)
-        # df.registerTempTable("temptable") 
-        # sqlContext.sql("insert into table mytable select * from temptable")
+        df = df.withColumn('pomiar', sf.lit(self.pm))
+        df = df.withColumn('update_date', sf.lit(current_time))
+        df = df.selectExpr('dt', 'city as miejscowosc', 'prediction as wartosc', 'pomiar', 'update_date')
+        # df.show(10)
+        df.registerTempTable("temptable") 
+        self.session.sql("INSERT INTO TABLE smog_prediction SELECT * FROM temptable")
 
     def model_summary(self, test_df=None):
         assert self.model is not None
@@ -120,11 +121,14 @@ if __name__ == '__main__':
     features = ['temp_max', 'temp_min', 'pressure', 'humidity', 'wind_speed', 'current_value']
     train_kwargs = {'maxIter':100, 'regParam':0.3, 'elasticNetParam':0.8}
     
-    pm10_model = PollutionModel(sparkSession, 'PM10', features=features)
-    pm10_model.load('./models/pm10')
-    pm10_model.predict_sql('./sqls/inference.sql')
+    # pm10_model = PollutionModel(sparkSession, 'PM10', features=features)
+    # pm10_model.load('./models/pm10')
+    # pm10_model.predict_sql('./sqls/inference.sql')
+    
+    # pm10_model.fit_sql('./sqls/train.sql', validate=False, **train_kwargs)
+    #  pm10_model.save('./models/pm10')
     
     
-    # pm10_model.fit_sql('./sqls/train.sql', validate=True, **train_kwargs)
-    # pm10_model.save('./models/pm10')
-    
+    pm25_model = PollutionModel(sparkSession, 'PM2.5', features=features)
+    pm25_model.fit_sql('./sqls/train.sql', validate=True, **train_kwargs)
+    pm25_model.save('./models/pm25')
