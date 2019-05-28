@@ -12,5 +12,5 @@ VALUES (3,'foo2'),
 conn = connect(host=hostname, port=10000, database=database)
 cursor = conn.cursor()
 cursor.execute(statement)
-# results = cursor.fetchall()
-# print(results)
+results = cursor.fetchall()
+print(results)
