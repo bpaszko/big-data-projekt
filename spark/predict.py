@@ -1,9 +1,11 @@
-from .pollution_model import PollutionModel
+import os 
+import sys
+import argparse
+
+from pollution_model import PollutionModel
 
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext, SparkSession
-
-import argparse
 
 
 def get_args():

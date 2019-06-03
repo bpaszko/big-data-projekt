@@ -1,13 +1,18 @@
+import os
+import sys
+import datetime
+spark_home = os.environ['SPARK_HOME']
+sys.path.append(os.path.join(spark_home, 'python'))
+sys.path.append(os.path.join(spark_home, 'python/lib/py4j-0.10.7-src.zip'))
+
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext, SparkSession
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
-from pyspark.ml.regression import RandomForestRegressor, RandomForestRegressorModel
+from pyspark.ml.regression import RandomForestRegressor, RandomForestRegressionModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import VectorAssembler, Imputer, ImputerModel
 import pyspark.sql.functions as sf
 
-import os
-import datetime
 
 
 class PollutionModel:
@@ -28,7 +33,7 @@ class PollutionModel:
             if self.pm == 'PM10':
                 self.model = LinearRegressionModel.load(os.path.join(load_dir, 'model'))
             else:
-                self.model = RandomForestRegressorModel.load(os.path.join(load_dir, 'model'))
+                self.model = RandomForestRegressionModel.load(os.path.join(load_dir, 'model'))
             self.imputer= ImputerModel.load(os.path.join(load_dir, 'imputer'))
             self.assembler = VectorAssembler.load(os.path.join(load_dir, 'assembler'))
         else:

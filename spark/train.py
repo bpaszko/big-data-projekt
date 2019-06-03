@@ -1,16 +1,17 @@
-from .pollution_model import PollutionModel
+import os 
+import sys
+import argparse
+
+from pollution_model import PollutionModel
 
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext, SparkSession
-
-import argparse
-import os
 
 
 def get_args():
     parser = argparse.ArgumentParser(description='Training pollution model.')
     parser.add_argument('-p', '--pollution', dest='pollution', default='all', choices=['PM10', 'PM2.5', 'all'], help='which models to train ("PM10", "PM2.5", "all")')
-    parser.add_argument('-d', '--save_dir', dest='save_dir', help='Path where to save model')
+    parser.add_argument('-d', '--save_dir', dest='save_dir', default='./models/', help='Path where to save model')
     args = parser.parse_args()
     return args.pollution, args.save_dir
 
@@ -24,7 +25,7 @@ def train_model(spark_session, pollution, save_dir):
     elif pollution == 'PM10':
         train_pm10(spark_session, save_dir)
     else:
-        raise RuntimeError(f'Unknown pollution type: {pollution}')
+        raise RuntimeError('Unknown pollution type: {}'.format(pollution))
 
 
 def train_pm10(spark_session, save_dir):
