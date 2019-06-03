@@ -1,6 +1,7 @@
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext, SparkSession
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
+from pyspark.ml.regression import RandomForestRegressor, RandomForestRegressorModel
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.feature import VectorAssembler, Imputer, ImputerModel
 import pyspark.sql.functions as sf
@@ -24,7 +25,10 @@ class PollutionModel:
 
     def load(self, load_dir):
         if os.path.isdir(load_dir):
-            self.model = LinearRegressionModel.load(os.path.join(load_dir, 'model'))
+            if self.pm == 'PM10':
+                self.model = LinearRegressionModel.load(os.path.join(load_dir, 'model'))
+            else:
+                self.model = RandomForestRegressorModel.load(os.path.join(load_dir, 'model'))
             self.imputer= ImputerModel.load(os.path.join(load_dir, 'imputer'))
             self.assembler = VectorAssembler.load(os.path.join(load_dir, 'assembler'))
         else:
@@ -48,8 +52,11 @@ class PollutionModel:
         test_df = None
         if validate:
             train_df, test_df = train_test_spark_split(df, test_size=0.3)
-        lr = LinearRegression(featuresCol = 'features', labelCol=self.label, **kwargs)
-        self.model = lr.fit(train_df)
+        if self.pm == 'PM10':
+            model = LinearRegression(featuresCol = 'features', labelCol=self.label, **kwargs)
+        else:
+            model = RandomForestRegressor(featuresCol = 'features', labelCol=self.label, **kwargs)
+        self.model = model.fit(train_df)
         self.model_summary(test_df)
 
     def predict_sql(self, sql_path='./sqls/inference.sql'):
@@ -72,9 +79,10 @@ class PollutionModel:
 
     def model_summary(self, test_df=None):
         assert self.model is not None
-        trainingSummary = self.model.summary
-        print("RMSE: %f" % trainingSummary.rootMeanSquaredError)
-        print("r2: %f" % trainingSummary.r2)
+        if self.pm == 'PM10':
+            trainingSummary = self.model.summary
+            print("RMSE: %f" % trainingSummary.rootMeanSquaredError)
+            print("r2: %f" % trainingSummary.r2)
 
         if not test_df is None:
             predictions = self.model.transform(test_df)
@@ -108,27 +116,3 @@ def train_test_spark_split(df, test_size):
     train_df = splits[0]
     test_df = splits[1]
     return train_df, test_df
-
-
-if __name__ == '__main__':
-    SparkContext.setSystemProperty("hive.metastore.uris", "0.0.0.0:9083")
-    sparkSession = (SparkSession
-                    .builder
-                    .appName('example-pyspark-read-and-write-from-hive')
-                    .enableHiveSupport()
-                    .getOrCreate())
-
-    features = ['temp_max', 'temp_min', 'pressure', 'humidity', 'wind_speed', 'current_value']
-    train_kwargs = {'maxIter':100, 'regParam':0.3, 'elasticNetParam':0.8}
-    
-    # pm10_model = PollutionModel(sparkSession, 'PM10', features=features)
-    # pm10_model.load('./models/pm10')
-    # pm10_model.predict_sql('./sqls/inference.sql')
-    
-    # pm10_model.fit_sql('./sqls/train.sql', validate=False, **train_kwargs)
-    #  pm10_model.save('./models/pm10')
-    
-    
-    pm25_model = PollutionModel(sparkSession, 'PM2.5', features=features)
-    pm25_model.fit_sql('./sqls/train.sql', validate=True, **train_kwargs)
-    pm25_model.save('./models/pm25')
