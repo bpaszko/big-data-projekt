@@ -13,7 +13,7 @@ def get_current_pollution(stations_csv, save_path, max_history=6):
     stations_df = stations_df[stations_df['DOSTEPNOSC'] == True]
     new_data = {'DATA': [], 'STACJA': [], 'WARTOSC': [], 'POMIAR': []}
     for sid in stations_df['ID']:
-        url = f'http://api.gios.gov.pl/pjp-api/rest/station/sensors/{sid}'
+        url = 'http://api.gios.gov.pl/pjp-api/rest/station/sensors/{}'.format(sid)
         response = requests.get(url).json()
         for sensor in response:
             measure_name = sensor['param']['paramCode']
@@ -22,7 +22,7 @@ def get_current_pollution(stations_csv, save_path, max_history=6):
             if measure_name == 'PM25':
                 measure_name = 'PM2.5'
             sensor_id = sensor['id']
-            sensor_url = f'http://api.gios.gov.pl/pjp-api/rest/data/getData/{sensor_id}'
+            sensor_url = 'http://api.gios.gov.pl/pjp-api/rest/data/getData/{}'.format(sensor_id)
             sensor_response = requests.get(sensor_url).json()
             for i in range(min(max_history, len(sensor_response['values']))):
                 if sensor_response['values'][i]['value'] != None:
@@ -48,7 +48,7 @@ def resave(excel_path, csv_path, stations_csv):
                 header = df.iloc[i-2]
                 break
         else:
-            logging.warning(f'Cannot parse {excel_path}')
+            logging.warning('Cannot parse {}'.format(excel_path))
             return
     
     header[0] = 'Date'
@@ -71,16 +71,16 @@ def resave(excel_path, csv_path, stations_csv):
 def excel_to_csv(dir_path, stations_csv, year, measure):
     m_name, possible_m_names = measure
     for m in possible_m_names:
-        excel_name = f'{year}_{m}_1g.xlsx'
+        excel_name = '{}_{}_1g.xlsx'.format(year, m)
         excel_path = os.path.join(dir_path, excel_name)
         if not os.path.exists(excel_path):
             continue
             
-        csv_name = f'{m_name}.csv'
+        csv_name = '{}.csv'.format(m_name)
         csv_path = os.path.join(dir_path, csv_name)
         resave(excel_path, csv_path, stations_csv)
         return
-    logging.warning(f'{m_name} not found in {year}')
+    logging.warning('{} not found in {}'.format(m_name, year))
     
     
 def handle_zip(data_dir, fname):
@@ -95,10 +95,10 @@ def handle_zip(data_dir, fname):
 
     zip_path = os.path.join(data_dir, fname)
     if fname != old_fname:
-        mv_command = f'mv {os.path.join(data_dir, old_fname)} {zip_path}'
+        mv_command = 'mv {} {}'.format(os.path.join(data_dir, old_fname), zip_path)
         os.system(mv_command)
     new_dir_path = os.path.join(data_dir, year)
-    os.system(f"mkdir {new_dir_path}; unzip {zip_path} -d {new_dir_path}; rm {zip_path};")
+    os.system("mkdir {}; unzip {} -d {}; rm {};".format(new_dir_path, zip_path, new_dir_path, zip_path))
     return new_dir_path, year
     
     
