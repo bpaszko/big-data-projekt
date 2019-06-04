@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS all_stations_text;
+DROP TABLE IF EXISTS all_stations;
+
 CREATE EXTERNAL TABLE IF NOT EXISTS all_stations_text(
   wojewodztwo string,
   kod_stary string,

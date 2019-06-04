@@ -1,12 +1,16 @@
 import collections
 import os
 
-weather_current_filename = "weather_current.csv"
-weather_forecast_filename = "weather_forecast.csv"
+weather_current_filename = "weather_current"
+weather_forecast_filename = "weather_forecast"
 
-files_path = os.path.join("..", "data", "weather")
+# local
+# files_path = os.path.join("..", "data", "weather")
 
-weather_current_filename = os.path.join(files_path, "weather_current", weather_current_filename)
+# cluster
+files_path = "/big-data-projekt/data/weather"
+
+weather_current_filename = os.path.join(files_path, "meteo_final", weather_current_filename)
 weather_forecast_filename = os.path.join(files_path, "weather_forecast", weather_forecast_filename)
 
 encoding_utf = "utf-8"
@@ -49,10 +53,10 @@ cities_dict = {
 }
 
 weather_current_columns = [
-    'city_name',
     'dt',
-    'main_temp_min',
+    'city_name',
     'main_temp_max',
+    'main_temp_min',
     'main_pressure',
     'main_humidity',
     'wind_speed'
@@ -60,7 +64,13 @@ weather_current_columns = [
 
 weather_forecast_columns = [
     'update_date',
-    *weather_current_columns
+    'city_name',
+    'dt',
+    'main_temp_min',
+    'main_temp_max',
+    'main_pressure',
+    'main_humidity',
+    'wind_speed'
 ]
 
 
