@@ -13,11 +13,11 @@ library(leaflet)
 library(dplyr)
 library(leaflet.extras)
 #import data
-setwd("c:/pw")
-data<-as.data.frame(read.table('lonlat.csv',sep = ',',colClasses=c("numeric", "numeric"),na.strings='NULL'))
+
+data<-as.data.frame(read.table(url('https://raw.githubusercontent.com/bpaszko/big-data-projekt/master/dashboard/lonlat.csv'),sep = ',',colClasses=c("numeric", "numeric"),na.strings='NULL'))
 colnames(data)<-c('latitude','longitude')
 mag_temp<-rep(3,179)
-miejscowosci<-read.csv2('miasta.csv', header = F)
+miejscowosci<-read.csv2(url('https://raw.githubusercontent.com/bpaszko/big-data-projekt/master/dashboard/miasta.csv'), header = F,encoding = 'UTF-8')
 miejscowosci_temp<-miejscowosci[,1]
 dat1<-data.frame(cbind(data, city=tolower(miejscowosci_temp)))
 data<-cbind(data, mag=mag_temp, city=miejscowosci_temp)
@@ -83,7 +83,7 @@ server <- function(input, output, session) {
     proxy <- leafletProxy("mymap", data = smog)
     proxy %>% clearMarkers()
     #if (input$markers) {
-      proxy %>% addCircleMarkers(stroke = FALSE, color = ~pal2(smog$wskaznik), fillOpacity = 0.9,      label = ~as.character(paste0(toupper(smog$city),": ",smog$wskaznik," -", sep = " ", round(odczyt,2)))) #%>%
+      proxy %>% addCircleMarkers(stroke = FALSE, color = ~pal2(smog$wskaznik), fillOpacity = 0.9,      label = ~as.character(paste0(toupper(smog$city),": ",smog$wskaznik,'/PM2.5',"  - ", sep = " ", round(odczyt,2), "/", round(odczyt,2)))) #%>%
         #addLegend("bottomright", pal = pal2, values = smog$wskaznik,
                   #title = "Depth Type",
                  # opacity = 1)#}
