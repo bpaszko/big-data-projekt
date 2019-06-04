@@ -5,11 +5,13 @@ import os
 import re
 import logging
 
+from datetime import datetime
+
 
 def get_current_pollution(stations_csv, save_path, max_history=6):
     stations_df = pd.read_csv(stations_csv)
     stations_df = stations_df[stations_df['DOSTEPNOSC'] == True]
-    new_data = {'STACJA': [], 'DATA': [], 'POMIAR': [], 'WARTOSC': []}
+    new_data = {'DATA': [], 'STACJA': [], 'WARTOSC': [], 'POMIAR': []}
     for sid in stations_df['ID']:
         url = f'http://api.gios.gov.pl/pjp-api/rest/station/sensors/{sid}'
         response = requests.get(url).json()
@@ -26,13 +28,13 @@ def get_current_pollution(stations_csv, save_path, max_history=6):
                 if sensor_response['values'][i]['value'] != None:
                     measure_value = sensor_response['values'][i]['value']
                     measure_date = sensor_response['values'][i]['date']
-                    new_data['STACJA'].append(sid)
                     new_data['DATA'].append(measure_date)
+                    new_data['STACJA'].append(sid)
                     new_data['WARTOSC'].append(measure_value)
                     new_data['POMIAR'].append(measure_name)
                     break
     df = pd.DataFrame.from_dict(new_data)
-    df.to_csv(save_path, index=False)
+    df.to_csv(save_path, index=False, header=False)
 
 
 def resave(excel_path, csv_path, stations_csv):
@@ -119,9 +121,15 @@ def load_data(data_dir, stations_csv, measures):
 
 
 if __name__ == '__main__':
-    smog_dir_path = os.path.join('..', 'data', 'smog')
+    time_stamp = datetime.now().strftime('%Y%m%d%H')
+
+    # local
+    # smog_dir_path = os.path.join('..', 'data', 'smog')
+    # cluster
+    smog_dir_path = '/big-data-projekt/data/smog'
+
     stations_csv = os.path.join(smog_dir_path, 'all_stations', 'all_stations.csv')
-    save_path = os.path.join(smog_dir_path, 'smog_current', "smog_current.csv")
+    save_path = os.path.join(smog_dir_path, 'smog_history', "smog_current_{}.csv".format(time_stamp))
     history_dir = os.path.join(smog_dir_path, 'history')
     measures = {
         'PM10': ['PM10'],
@@ -133,3 +141,7 @@ if __name__ == '__main__':
 
     ### LOAD CURRENT DATA
     get_current_pollution(stations_csv, save_path, max_history=6)
+
+    ## SAVE TO HDFS
+    hdfs_command = "hdfs dfs -put {} /data/smog/smog_history".format(save_path)
+    os.system(hdfs_command)

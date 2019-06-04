@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS smog_prediction;
+
 CREATE TABLE IF NOT EXISTS smog_prediction(
   dt timestamp,
   id string,

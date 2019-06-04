@@ -2,6 +2,7 @@ import requests
 import csv
 from datetime import datetime
 from settings import *
+import os
 
 
 def get_weather():
@@ -15,30 +16,31 @@ def get_weather():
         a = (flatten(test_data))
         del a['weather']
 
-        a['dt']=datetime.fromtimestamp((a['dt'])).strftime('%Y-%m-%d %H:%M')
+        a['dt']=datetime.fromtimestamp((a['dt'])).strftime('%Y-%m-%d')
         a['name'] = city_utf
         a2 = {
-            'city_name': a.get('name'),
             'dt': a.get('dt'),
-            'main_temp_min': a.get('main_temp_min'),
+            'city_name': a.get('name'),
             'main_temp_max': a.get('main_temp_max'),
+            'main_temp_min': a.get('main_temp_min'),
             'main_pressure': a.get('main_pressure'),
             'main_humidity': a.get('main_humidity'),
             'wind_speed': a.get('wind_speed')
         }
         cities_rows.append(a2)
 
-    with open(weather_current_filename, 'w', newline='', encoding=encoding_utf) as f:
+    time_stamp = datetime.now().strftime('%Y%m%d%H')
+    file = "{}_{}.csv".format(weather_current_filename, time_stamp)
+    with open(file, 'w', newline='', encoding=encoding_utf) as f:
         w = csv.DictWriter(f, weather_current_columns)
         w.writeheader()
-
         for row in cities_rows:
             w.writerow(row)
 
-
-def main():
-    get_weather()
+    return file
 
 
 if __name__ == '__main__':
-    main()
+    save_path = get_weather()
+    hdfs_command = "hdfs dfs -put {} /data/weather/meteo_final".format(save_path)
+    os.system(hdfs_command)

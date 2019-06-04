@@ -2,6 +2,7 @@ import requests
 import csv
 from datetime import datetime
 from settings import *
+import os
 
 
 def get_weather():
@@ -25,6 +26,7 @@ def get_weather():
         a.pop('city_country', None)
         a.pop('cnt', None)
         a.pop('city_population', None)
+        a.pop('city_timezone', None)
         a2 = {'update_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         a2.update(a)
         a2.update(a1)
@@ -39,7 +41,8 @@ def get_weather():
         a2.pop('dt_txt', None)
         cities_rows[city_utf] = test_data['list']
 
-    with open(weather_forecast_filename, 'w', newline='', encoding=encoding_utf) as f:
+    file = "{}.csv".format(weather_forecast_filename)
+    with open(file, 'w', newline='', encoding=encoding_utf) as f:
         w = csv.DictWriter(f, weather_forecast_columns)
         w.writeheader()
         for city, row in cities_rows.items():
@@ -63,11 +66,10 @@ def get_weather():
                 rr['dt'] = datetime.fromtimestamp((rr['dt'])).strftime('%Y-%m-%d %H:%M:%S')
                 at.update(rr)
                 w.writerow(at)
-
-
-def main():
-    get_weather()
+    return file
 
 
 if __name__ == '__main__':
-    main()
+    save_path = get_weather()
+    hdfs_command = "hdfs dfs -put -f {} /data/weather/weather_forecast".format(save_path)
+    os.system(hdfs_command)
