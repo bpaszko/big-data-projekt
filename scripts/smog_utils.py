@@ -6,7 +6,7 @@ import re
 import logging
 
 from datetime import datetime
-
+from settings import *
 
 def get_current_pollution(stations_csv, save_path, max_history=6):
     stations_df = pd.read_csv(stations_csv)
@@ -129,7 +129,9 @@ if __name__ == '__main__':
     smog_dir_path = '/big-data-projekt/data/smog'
 
     stations_csv = os.path.join(smog_dir_path, 'all_stations', 'all_stations.csv')
-    save_path = os.path.join(smog_dir_path, 'smog_history', "smog_current_{}.csv".format(time_stamp))
+    #save_path = os.path.join(smog_dir_path, 'smog_history', "smog_current_{}.csv".format(time_stamp))
+
+    save_path = os.path.join(tmp_path, "smog_current_{}.csv".format(time_stamp))
     history_dir = os.path.join(smog_dir_path, 'history')
     measures = {
         'PM10': ['PM10'],
@@ -145,3 +147,5 @@ if __name__ == '__main__':
     ## SAVE TO HDFS
     hdfs_command = "hdfs dfs -put {} /data/smog/smog_history".format(save_path)
     os.system(hdfs_command)
+    rm_command = "rm {}".format(save_path)
+    os.system(rm_command)

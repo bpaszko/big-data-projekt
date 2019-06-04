@@ -6,12 +6,13 @@ weather_forecast_filename = "weather_forecast"
 
 # local
 # files_path = os.path.join("..", "data", "weather")
+# weather_current_filename = os.path.join(files_path, "meteo_final", weather_current_filename)
+# weather_forecast_filename = os.path.join(files_path, "weather_forecast", weather_forecast_filename)
 
 # cluster
-files_path = "/big-data-projekt/data/weather"
-
-weather_current_filename = os.path.join(files_path, "meteo_final", weather_current_filename)
-weather_forecast_filename = os.path.join(files_path, "weather_forecast", weather_forecast_filename)
+tmp_path = '/tmp'
+weather_current_filename = os.path.join(tmp_path, weather_current_filename)
+weather_forecast_filename = os.path.join(tmp_path, weather_forecast_filename)
 
 encoding_utf = "utf-8"
 

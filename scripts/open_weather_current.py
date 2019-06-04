@@ -44,3 +44,5 @@ if __name__ == '__main__':
     save_path = get_weather()
     hdfs_command = "hdfs dfs -put {} /data/weather/meteo_final".format(save_path)
     os.system(hdfs_command)
+    rm_command = "rm {}".format(save_path)
+    os.system(rm_command)
