@@ -20,7 +20,7 @@ def predict(spark_session, pollution, load_dir):
     features = ['temp_max', 'temp_min', 'pressure', 'humidity', 'wind_speed', 'current_value']
     model = PollutionModel(spark_session, pollution, features=features)
     model.load(load_dir)
-    model.predict_sql('./sqls/inference.sql')
+    model.predict_sql('/big-data-projekt/spark/sqls/inference.sql')
 
 
 if __name__ == '__main__':
