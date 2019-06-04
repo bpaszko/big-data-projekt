@@ -18,13 +18,13 @@ FROM
       AVG(main_humidity) as humidity,
       AVG(wind_speed) as wind_speed
     FROM
-      weather_forecast_text AS a
+      weather_forecast AS a
       JOIN (
         SELECT
           station AS city,
           MAX(update_date) AS recent_time
         FROM
-          weather_forecast_text
+          weather_forecast
         GROUP BY
           station
       ) AS b ON a.station = b.city
