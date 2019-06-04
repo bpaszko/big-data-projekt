@@ -32,7 +32,7 @@ def train_pm10(spark_session, save_dir):
     features = ['temp_max', 'temp_min', 'pressure', 'humidity', 'wind_speed', 'current_value']
     train_kwargs = {'maxIter':100, 'regParam':0.3, 'elasticNetParam':0.8}
     pm10_model = PollutionModel(spark_session, 'PM10', features=features)
-    pm10_model.fit_sql('./sqls/train.sql', validate=False, **train_kwargs)
+    pm10_model.fit_sql('/big-data-projekt/spark/sqls/train.sql', validate=False, **train_kwargs)
     pm10_model.save(os.path.join(save_dir, 'pm10'))
 
 
@@ -40,7 +40,7 @@ def train_pm25(spark_session, save_dir):
     features = ['temp_max', 'temp_min', 'pressure', 'humidity', 'wind_speed', 'current_value']
     train_kwargs = {}
     pm25_model = PollutionModel(spark_session, 'PM2.5', features=features)
-    pm25_model.fit_sql('./sqls/train.sql', validate=False, **train_kwargs)
+    pm25_model.fit_sql('/big-data-projekt/spark/sqls/train.sql', validate=False, **train_kwargs)
     pm25_model.save(os.path.join(save_dir, 'pm25'))
 
 
