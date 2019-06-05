@@ -22,7 +22,7 @@ miejscowosci_temp<-miejscowosci[,1]
 dat1<-data.frame(cbind(data, city=tolower(miejscowosci_temp)))
 data<-cbind(data, mag=mag_temp, city=miejscowosci_temp)
 
-# Define UI for application that draws a histogram
+
 ui <- fluidPage(
   titlePanel("Czy bedzie smog?"),
   sidebarLayout(
@@ -35,11 +35,7 @@ ui <- fluidPage(
   mainPanel( 
     #this will create a space for us to display our map
     leafletOutput(outputId = "mymap", height = "950px", width = "950px"), 
-    #this allows me to put the checkmarks ontop of the map to allow people to view earthquake depth or overlay a heatmap
-    #absolutePanel(top = 60, left = 20, 
-                 # checkboxInput("markers", "Depth", FALSE),
-                 # checkboxInput("heat", "Heatmap", FALSE)
-    #),
+
     width = 8
   ))
 )
@@ -50,18 +46,23 @@ server <- function(input, output, session) {
     dt<-read.csv(url("https://storage.googleapis.com/smog_pred_bucket/smog_pred.csv"), encoding="UTF-8",sep = ',')
     #choices = sort(as.POSIXlt(as.POSIXct(as.character(unique(dt[,1])),format="%Y-%m-%d %H:%M:%S")))
     colnames(dt)=c('data','city','odczyt','wskaznik','datapob')
+    index<-which(dt$wskaznik=="PM10")
+    dt1<-dt[index,]
+    dt2<-dt[-index,]
+    dt<-merge(x=dt1[,1:4],y=dt2, by=c("data","city"), all.x = TRUE)
+    colnames(dt)=c('data','city','odczyt','wskaznik',"odczyt2",'wskaznik2','datapob')
+    dt$wskaznik2[is.na(dt$wskaznik2)] <- 'PM2.5'
+    dt$odczyt2[is.na(dt$odczyt2)] <- '-'
+    dt<-dt[,1:6]
     dt<-merge(dt,dat1)
+
     #dt<-merge(dt, data1)
     return (dt)
   })  
-  #define the color pallate for the magnitidue of the earthquake
-  pal <- colorNumeric(
-    palette = c('gold', 'orange', 'dark orange', 'orange red', 'red', 'dark red'),
-    domain = data$mag)
-  
-  #define the color of for the depth of the earquakes
+
+
   pal2 <- colorFactor(
-    palette = c('blue', 'yellow', 'red'),
+    palette = c('yellow', 'red'),
     domain = data$depth_type
   )
   
@@ -75,21 +76,15 @@ server <- function(input, output, session) {
       #addCircles(data = smog, lat = ~ latitude, lng = ~ longitude, weight = 1, radius = ~sqrt(as.numeric(wskaznik))*5000, popup = ~as.character(smog$wskaznik), label = ~as.character(paste0(city, ': ', "PM10: ", sep = " ", as.numeric(smog$wskaznik))), color = 'dark orange', fillOpacity = 0.5)
   })
   
-  #next we use the observe function to make the checkboxes dynamic. If you leave this part out you will see that the checkboxes, when clicked on the first time, display our filters...But if you then uncheck them they stay on. So we need to tell the server to update the map when the checkboxes are unchecked.
-  observe({
+   observe({
     smog<-data1()
     smog <- smog %>% dplyr::filter(input$variable == as.character(smog$data))
     smog$odczyt<-ifelse(smog$odczyt<0,0,smog$odczyt)
     proxy <- leafletProxy("mymap", data = smog)
     proxy %>% clearMarkers()
     #if (input$markers) {
-      proxy %>% addCircleMarkers(stroke = FALSE, color = ~pal2(smog$wskaznik), fillOpacity = 0.9,      label = ~as.character(paste0(toupper(smog$city),": ",smog$wskaznik,'/PM2.5',"  - ", sep = " ", round(odczyt,2), "/", round(odczyt,2)))) #%>%
-        #addLegend("bottomright", pal = pal2, values = smog$wskaznik,
-                  #title = "Depth Type",
-                 # opacity = 1)#}
-    #else {
-      #proxy %>% clearMarkers() %>% clearControls()
-    #}
+      proxy %>% addCircleMarkers(stroke = FALSE, color = ~pal2(smog$wskaznik), fillOpacity = 0.8,      label = ~as.character(paste0(toupper(smog$city),": ",smog$wskaznik,'/PM2.5',"  - ", sep = " ", round(odczyt,2), "/", ifelse(odczyt2 %in% c('-'),'-',round(as.numeric(odczyt2),2))))) #%>%
+
   })
     observe({
       dat<-data1()
@@ -105,6 +100,5 @@ server <- function(input, output, session) {
   })  
 }
 
-# Run the application 
 shinyApp(ui = ui, server = server)
 
